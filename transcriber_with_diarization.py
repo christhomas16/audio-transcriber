@@ -396,7 +396,26 @@ class AudioTranscriberWithDiarization:
                 return None
             
             # Show audio duration after successful loading
-            print(f"⏱️ Audio duration: {len(audio_data) / sample_rate:.1f} seconds")
+            duration_seconds = len(audio_data) / sample_rate
+            print(f"⏱️ Audio duration: {duration_seconds:.1f} seconds")
+            
+            # Estimate processing time
+            if duration_seconds < 60:
+                print("⏰ Estimated processing time: 1-3 minutes")
+            elif duration_seconds < 300:  # 5 minutes
+                print("⏰ Estimated processing time: 3-8 minutes")
+            elif duration_seconds < 900:  # 15 minutes
+                print("⏰ Estimated processing time: 8-15 minutes")
+            elif duration_seconds < 1800:  # 30 minutes
+                print("⏰ Estimated processing time: 15-25 minutes")
+            else:
+                print("⏰ Estimated processing time: 25+ minutes (long audio file)")
+            
+            print("📋 Processing stages:")
+            print("  1. 🎯 Speaker diarization (70% of total time)")
+            print("  2. 🎤 Speech recognition (20% of total time)")
+            print("  3. 🔗 Speaker alignment (10% of total time)")
+            
             print("")
             
             # Convert to mono if stereo
@@ -415,13 +434,15 @@ class AudioTranscriberWithDiarization:
             try:
                 # Run diarization
                 print("🎯 Running speaker diarization...")
-                print("  ⏳ This may take several minutes for longer audio files...")
+                print("  ⏳ This is the most time-consuming step...")
+                print("  📊 Processing audio for speaker identification...")
                 diarization = self.diarization_pipeline(temp_audio_file)
                 print("  ✅ Diarization completed!")
+                print("  🎤 Speaker segments identified and voiceprints created")
 
                 # Run ASR with chunking for long-form audio
                 print("🎤 Running speech recognition...")
-                print("  ⏳ Processing audio chunks...")
+                print("  ⏳ Processing audio chunks (faster than diarization)...")
                 
                 # Run ASR with chunking for long-form audio
                 # Note: language parameter is handled differently in transformers pipeline
