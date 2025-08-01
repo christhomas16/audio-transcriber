@@ -1,0 +1,364 @@
+# =============================================================================
+# PYTHON
+# =============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff
+instance/
+.webassets-cache
+
+# Scrapy stuff
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+pdm.lock
+.pdm.toml
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# =============================================================================
+# AUDIO TRANSCRIBER SPECIFIC
+# =============================================================================
+
+# Audio files (all common formats)
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+*.aac
+*.wma
+*.wmv
+*.avi
+*.mov
+*.mkv
+*.webm
+*.m4v
+*.3gp
+*.amr
+*.opus
+*.aiff
+*.au
+*.ra
+*.rm
+*.swf
+
+# Video files (in case they contain audio)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.flv
+*.webm
+*.m4v
+*.3gp
+*.ogv
+
+# Transcription output files
+*_transcription.txt
+*_transcript.txt
+transcription.txt
+transcript.txt
+*_output.txt
+output.txt
+
+# Whisper model cache and files
+*.pt
+*.pth
+models/
+whisper_models/
+~/.cache/whisper/
+
+# Audio processing temporary files
+*.temp
+*.tmp
+temp_audio/
+processed_audio/
+
+# =============================================================================
+# DEVELOPMENT TOOLS
+# =============================================================================
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# OPERATING SYSTEM
+# =============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# PROJECT SPECIFIC
+# =============================================================================
+
+# Test files and directories
+test_audio/
+samples/
+examples/
+demo/
+test_files/
+
+# Logs
+*.log
+logs/
+log/
+
+# Configuration files with sensitive data
+config.ini
+settings.json
+secrets.json
+.env.local
+.env.production
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Temporary directories
+tmp/
+temp/
+.tmp/
+
+# Large files that shouldn't be in git
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.iso
+*.dmg
+*.pkg
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Documentation builds
+docs/_build/
+site/
+
+# =============================================================================
+# MISC
+# =============================================================================
+
+# Node.js (if using any JS tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ruby (if using any Ruby tools)
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Java (if using any Java tools)
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Compiled source
+*.com
+*.exe
+*.o
+*.so
+
+# Packages
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
