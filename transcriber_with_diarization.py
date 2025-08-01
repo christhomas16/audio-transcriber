@@ -27,6 +27,8 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pyannote.audio.c
 warnings.filterwarnings("ignore", category=UserWarning, module="pyannote.audio.pipelines.speaker_verification")
 warnings.filterwarnings("ignore", category=UserWarning, module="pyannote.audio.tasks.segmentation.mixins")
 warnings.filterwarnings("ignore", category=UserWarning, module="pyannote.audio.core.model")
+warnings.filterwarnings("ignore", message=".*forced_decoder_ids.*")
+warnings.filterwarnings("ignore", message=".*multilingual Whisper.*")
 logging.getLogger("pytorch_lightning").setLevel(logging.ERROR)
 
 
