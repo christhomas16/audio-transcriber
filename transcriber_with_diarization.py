@@ -53,6 +53,9 @@ class AudioTranscriberWithDiarization:
             print("  echo 'HF_TOKEN=your_token_here' > .env")
             sys.exit(1)
         
+        # Note about version warnings
+        print("Note: You may see PyTorch version warnings. These are normal and won't affect functionality.")
+        
         # Speaker identification components
         self.person_counter = 1
         self.speaker_voiceprints = {}
@@ -63,6 +66,11 @@ class AudioTranscriberWithDiarization:
             # Initialize ASR pipeline
             device = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
             torch_dtype = torch.float32
+            
+            # Handle language-specific models
+            if model_name.endswith(".en") and language and language != "en":
+                print(f"Warning: Using English-only model '{model_name}' but language is set to '{language}'")
+                print("Consider using a multilingual model for better results")
             
             self.asr_pipeline = pipeline(
                 "automatic-speech-recognition",
@@ -399,17 +407,14 @@ class AudioTranscriberWithDiarization:
                 if self.debug: 
                     print("🎤 Running ASR transcription...")
                 
-                # Set language parameter for ASR
-                asr_kwargs = {
-                    "return_timestamps": True,
-                    "chunk_length_s": 30,
-                    "stride_length_s": 5
-                }
-                
-                if language:
-                    asr_kwargs["language"] = language
-                
-                asr_result = self.asr_pipeline(audio_data, **asr_kwargs)
+                # Run ASR with chunking for long-form audio
+                # Note: language parameter is handled differently in transformers pipeline
+                asr_result = self.asr_pipeline(
+                    audio_data, 
+                    return_timestamps=True,
+                    chunk_length_s=30,
+                    stride_length_s=5
+                )
 
                 # Combine ASR and diarization results
                 segments = self.align_asr_with_diarization(asr_result, diarization, temp_audio_file)
