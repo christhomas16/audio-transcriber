@@ -1,9 +1,10 @@
 # Audio Transcriber
 
-A Python-based audio transcription tool using OpenAI's Whisper model. This tool can transcribe audio files in various formats and languages with optional timestamp information.
+A Python-based audio transcription tool using OpenAI's Whisper model with optional speaker diarization. This tool can transcribe audio files in various formats and languages, with the ability to identify and distinguish between different speakers in the audio.
 
 ## Features
 
+### Basic Transcription
 - Transcribe audio files using OpenAI Whisper
 - Support for multiple model sizes (tiny, base, small, medium, large)
 - Multi-language support with auto-detection
@@ -11,11 +12,26 @@ A Python-based audio transcription tool using OpenAI's Whisper model. This tool 
 - Command-line interface with customizable options
 - Easy-to-use shell script wrapper
 
+### Speaker Diarization (Advanced)
+- **Speaker identification**: Automatically identify and distinguish between different speakers
+- **Voice fingerprinting**: Create consistent speaker profiles across the audio
+- **Multi-speaker support**: Handle conversations with multiple participants
+- **Confidence-based matching**: Intelligent speaker matching with confidence thresholds
+- **Debug mode**: Detailed logging for troubleshooting speaker identification
+
 ## Requirements
 
+### Basic Transcription
 - Python 3.7+
 - OpenAI Whisper
 - FFmpeg (for audio processing)
+
+### Speaker Diarization (Additional Requirements)
+- PyTorch and TorchAudio
+- Transformers library
+- Pyannote.audio (speaker diarization)
+- Hugging Face token (free account required)
+- Additional dependencies (see requirements_diarization.txt)
 
 ## Installation
 
@@ -27,7 +43,7 @@ A Python-based audio transcription tool using OpenAI's Whisper model. This tool 
    cd audio-transcriber
    ```
 
-2. Run the automatic setup:
+2. For basic transcription, run the automatic setup:
    ```bash
    ./run.sh --setup
    ```
@@ -38,6 +54,17 @@ A Python-based audio transcription tool using OpenAI's Whisper model. This tool 
    - Create a Python virtual environment
    - Install all required dependencies
    - Set up everything automatically
+
+3. For speaker diarization (advanced), run the diarization setup:
+   ```bash
+   ./run_diarization.sh --setup
+   ```
+   
+   This will:
+   - Set up everything from basic transcription
+   - Install PyTorch and Pyannote.audio
+   - Guide you through Hugging Face token setup
+   - Install all diarization dependencies
 
 ### Manual Installation
 
@@ -83,13 +110,31 @@ If you prefer manual installation:
 
 ## Usage
 
-### Using the shell script (recommended)
+### Basic Transcription
+
+#### Using the shell script (recommended)
 
 Basic usage:
 ```bash
 ./run.sh audio.wav
 # Also works with M4A, MP3, and other formats:
 ./run.sh recording.m4a
+```
+
+### Speaker Diarization (Advanced)
+
+#### Using the diarization script
+
+Basic usage with speaker identification:
+```bash
+./run_diarization.sh audio.wav
+# Also works with M4A, MP3, and other formats:
+./run_diarization.sh recording.m4a
+```
+
+With debug mode to see speaker identification details:
+```bash
+./run_diarization.sh audio.wav --debug
 ```
 
 With custom model size:
@@ -114,6 +159,7 @@ Without timestamps:
 
 ### Using Python directly
 
+#### Basic Transcription
 ```bash
 # If using virtual environment (recommended):
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -124,24 +170,45 @@ python3 transcriber.py audio.wav
 python3 transcriber.py audio.wav -m large -l en -o output.txt
 ```
 
+#### Speaker Diarization
+```bash
+# If using virtual environment (recommended):
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+python transcriber_with_diarization.py audio.wav
+
+# With debug mode:
+python transcriber_with_diarization.py audio.wav --debug
+
+# With custom model and language:
+python transcriber_with_diarization.py audio.wav -m large -l en --debug
+```
+
 ### Command-line options
 
+#### Basic Transcription
 - `audio_file`: Path to the audio file to transcribe (required)
 - `-m, --model`: Whisper model size (tiny, base, small, medium, large) - default: base
 - `-l, --language`: Language code (e.g., en, es, fr) - default: en (auto-detect if empty)
 - `-o, --output`: Output file path - default: `[audio_filename]_transcription.txt`
 - `--no-timestamps`: Don't include timestamps in output file
 
+#### Speaker Diarization (Additional Options)
+- `--debug`: Enable debug mode to see detailed speaker identification process
+- All basic transcription options are also available
+
 ## Supported Audio Formats
 
-Whisper supports many audio formats including:
-- WAV
-- MP3
-- M4A
-- FLAC
-- OGG
-- AAC
-- WMA
+Both basic transcription and speaker diarization support many audio formats including:
+- **WAV** - Uncompressed audio
+- **MP3** - Compressed audio
+- **M4A** - Apple's audio format (common in iPhone recordings)
+- **FLAC** - Lossless compressed audio
+- **OGG** - Open source audio format
+- **AAC** - Advanced Audio Coding
+- **WMA** - Windows Media Audio
+- **MP4** - Video files with audio (audio will be extracted)
+
+**Note**: M4A files are particularly well-supported and work great for speaker diarization, making them ideal for meeting recordings and voice memos.
 
 ## Model Sizes and Performance
 
@@ -196,6 +263,8 @@ Hello, this is a sample audio file. The transcription includes timestamps. This 
 
 ## Examples
 
+### Basic Transcription
+
 1. **Basic transcription:**
    ```bash
    ./run.sh meeting_recording.wav
@@ -225,6 +294,28 @@ Hello, this is a sample audio file. The transcription includes timestamps. This 
    ```bash
    ./run.sh multilingual_audio.wav -l ""
    ```
+
+### Speaker Diarization
+
+7. **Meeting with multiple speakers:**
+   ```bash
+   ./run_diarization.sh meeting_recording.m4a
+   ```
+
+8. **Interview with speaker identification:**
+   ```bash
+   ./run_diarization.sh interview.wav -m large --debug
+   ```
+
+9. **Multi-language conversation with speakers:**
+   ```bash
+   ./run_diarization.sh conversation.mp3 -l es --debug
+   ```
+
+10. **Podcast with speaker tracking:**
+    ```bash
+    ./run_diarization.sh podcast.m4a -o podcast_transcript.txt
+    ```
 
 ## Virtual Environment Management
 
@@ -257,6 +348,34 @@ rm -rf venv
 - **Reproducible**: Same environment across different machines
 - **Easy Management**: Automatic setup and activation
 
+## Hugging Face Token Setup (for Diarization)
+
+Speaker diarization requires a free Hugging Face account and token:
+
+1. **Create a Hugging Face account** at [https://huggingface.co/join](https://huggingface.co/join)
+
+2. **Get your access token**:
+   - Go to [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
+   - Click "New token"
+   - Give it a name (e.g., "audio-transcriber")
+   - Select "Read" role
+   - Copy the token
+
+3. **Set up the token** (choose one method):
+   ```bash
+   # Method 1: Environment variable
+   export HF_TOKEN=your_token_here
+   
+   # Method 2: .env file (recommended)
+   echo 'HF_TOKEN=your_token_here' > .env
+   ```
+
+4. **Accept the model licenses**:
+   - Visit [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1)
+   - Click "Accept" to accept the license
+   - Visit [pyannote/embedding](https://huggingface.co/pyannote/embedding)
+   - Click "Accept" to accept the license
+
 ## Performance Tips
 
 - Use `tiny` or `base` models for faster transcription if accuracy isn't critical
@@ -276,13 +395,23 @@ rm -rf venv
 2. **FFmpeg not found:**
    Install FFmpeg as described in the installation section
 
-3. **Out of memory errors:**
+3. **"Format not recognised" error (especially for M4A files):**
+   - Make sure FFmpeg is installed and working
+   - Check if the audio file is corrupted
+   - Some M4A files may require specific codecs
+
+4. **Out of memory errors:**
    Try using a smaller model (e.g., `tiny` or `base`)
 
-4. **Poor transcription quality:**
+5. **Poor transcription quality:**
    - Check audio quality and volume levels
    - Try a larger model
    - Specify the correct language if auto-detection fails
+
+6. **Hugging Face token issues (for diarization):**
+   - Make sure you have a valid HF_TOKEN
+   - Accept the model licenses on Hugging Face
+   - Check if your token has the correct permissions
 
 ### Performance Issues
 
@@ -294,12 +423,15 @@ rm -rf venv
 
 ```
 audio-transcriber/
-├── transcriber.py      # Main Python script
-├── run.sh             # Shell script wrapper with auto-setup
-├── requirements.txt    # Python dependencies
-├── .gitignore         # Git ignore patterns
-├── README.md          # This file
-└── venv/              # Virtual environment (created by setup)
+├── transcriber.py                    # Basic transcription script
+├── transcriber_with_diarization.py   # Advanced transcription with speaker identification
+├── run.sh                           # Basic transcription shell script wrapper
+├── run_diarization.sh               # Diarization shell script wrapper
+├── requirements.txt                 # Basic transcription dependencies
+├── requirements_diarization.txt     # Diarization dependencies
+├── .gitignore                      # Git ignore patterns
+├── README.md                       # This file
+└── venv/                           # Virtual environment (created by setup)
     ├── bin/
     ├── lib/
     └── ...
