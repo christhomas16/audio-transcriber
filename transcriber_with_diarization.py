@@ -379,8 +379,6 @@ class AudioTranscriberWithDiarization:
         
         print(f"📂 Processing audio file: {audio_file}")
         print(f"🌍 Language: {language if language else 'Auto-detect'}")
-        print(f"⏱️ Audio duration: {len(audio_data) / sample_rate:.1f} seconds")
-        print("")
         
         try:
             # Check file extension and provide format info
@@ -396,6 +394,10 @@ class AudioTranscriberWithDiarization:
             if audio_data is None or sample_rate is None:
                 print("Failed to load audio file. Please check if FFmpeg is installed.")
                 return None
+            
+            # Show audio duration after successful loading
+            print(f"⏱️ Audio duration: {len(audio_data) / sample_rate:.1f} seconds")
+            print("")
             
             # Convert to mono if stereo
             if len(audio_data.shape) > 1:
