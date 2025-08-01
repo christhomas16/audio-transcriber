@@ -15,6 +15,7 @@ import numpy as np
 import torch
 import soundfile as sf
 from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 from transformers import pipeline
 from pyannote.audio import Pipeline
@@ -30,6 +31,33 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pyannote.audio.c
 warnings.filterwarnings("ignore", message=".*forced_decoder_ids.*")
 warnings.filterwarnings("ignore", message=".*multilingual Whisper.*")
 logging.getLogger("pytorch_lightning").setLevel(logging.ERROR)
+
+
+def backup_existing_file(output_file):
+    """
+    Create a backup of an existing file with timestamp.
+    
+    Args:
+        output_file (str): Path to the output file
+        
+    Returns:
+        str: Path to the backup file if created, None if no backup needed
+    """
+    if os.path.exists(output_file):
+        # Generate timestamp for backup
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = Path(output_file)
+        backup_name = f"{file_path.stem}_backup_{timestamp}{file_path.suffix}"
+        backup_path = file_path.parent / backup_name
+        
+        try:
+            os.rename(output_file, backup_path)
+            print(f"📁 Backed up existing file to: {backup_path}")
+            return str(backup_path)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not backup existing file: {e}")
+            return None
+    return None
 
 
 class AudioTranscriberWithDiarization:
@@ -69,10 +97,7 @@ class AudioTranscriberWithDiarization:
             device = "mps" if torch.backends.mps.is_available() else ("cuda" if torch.cuda.is_available() else "cpu")
             torch_dtype = torch.float32
             
-            # Handle language-specific models
-            if model_name.endswith(".en") and language and language != "en":
-                print(f"Warning: Using English-only model '{model_name}' but language is set to '{language}'")
-                print("Consider using a multilingual model for better results")
+            # Note: Language-specific model checking is done at transcription time
             
             self.asr_pipeline = pipeline(
                 "automatic-speech-recognition",
@@ -529,6 +554,9 @@ class AudioTranscriberWithDiarization:
             with_timestamps (bool): Include timestamps in output
         """
         try:
+            # Backup existing file if it exists
+            backup_existing_file(output_file)
+            
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write("TRANSCRIPTION WITH SPEAKER IDENTIFICATION\n")
                 f.write("="*50 + "\n\n")

@@ -8,6 +8,34 @@ import sys
 import os
 import whisper
 from pathlib import Path
+from datetime import datetime
+
+
+def backup_existing_file(output_file):
+    """
+    Create a backup of an existing file with timestamp.
+    
+    Args:
+        output_file (str): Path to the output file
+        
+    Returns:
+        str: Path to the backup file if created, None if no backup needed
+    """
+    if os.path.exists(output_file):
+        # Generate timestamp for backup
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_path = Path(output_file)
+        backup_name = f"{file_path.stem}_backup_{timestamp}{file_path.suffix}"
+        backup_path = file_path.parent / backup_name
+        
+        try:
+            os.rename(output_file, backup_path)
+            print(f"📁 Backed up existing file to: {backup_path}")
+            return str(backup_path)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not backup existing file: {e}")
+            return None
+    return None
 
 
 def transcribe_audio(audio_file, model_size="medium.en", language="en", output_file=None, with_timestamps=True):
@@ -83,6 +111,9 @@ def save_transcription(result, output_file, with_timestamps=True):
         with_timestamps (bool): Include timestamps in output
     """
     try:
+        # Backup existing file if it exists
+        backup_existing_file(output_file)
+        
         with open(output_file, "w", encoding="utf-8") as f:
             if with_timestamps:
                 f.write("TRANSCRIPTION WITH TIMESTAMPS\n")
