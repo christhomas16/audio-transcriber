@@ -118,10 +118,12 @@ class AudioTranscriberWithDiarization:
             tuple: (audio_data, sample_rate)
         """
         try:
+            print("  📁 Creating temporary file...")
             # Create temporary WAV file
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_wav:
                 temp_wav_path = temp_wav.name
             
+            print("  🔄 Converting audio with FFmpeg...")
             # Use FFmpeg to convert to WAV
             cmd = [
                 'ffmpeg', '-i', audio_file,
@@ -132,15 +134,21 @@ class AudioTranscriberWithDiarization:
                 temp_wav_path
             ]
             
-            # Run FFmpeg command
+            # Run FFmpeg command with progress
+            print("  ⏳ Running FFmpeg conversion (this may take a moment)...")
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode != 0:
-                print(f"FFmpeg error: {result.stderr}")
+                print(f"  ❌ FFmpeg error: {result.stderr}")
                 return None, None
+            
+            print("  ✅ FFmpeg conversion completed!")
+            print("  📖 Loading converted audio file...")
             
             # Load the converted WAV file
             audio_data, sample_rate = sf.read(temp_wav_path)
+            
+            print(f"  ✅ Audio loaded: {len(audio_data)} samples at {sample_rate} Hz")
             
             # Clean up temporary file
             os.unlink(temp_wav_path)
@@ -148,7 +156,7 @@ class AudioTranscriberWithDiarization:
             return audio_data, sample_rate
             
         except Exception as e:
-            print(f"Error loading audio with FFmpeg: {e}")
+            print(f"  ❌ Error loading audio with FFmpeg: {e}")
             return None, None
 
     def load_audio(self, audio_file):
@@ -163,14 +171,16 @@ class AudioTranscriberWithDiarization:
         """
         # First try soundfile directly
         try:
+            print("  🎵 Trying to load audio directly...")
             audio_data, sample_rate = sf.read(audio_file)
+            print(f"  ✅ Direct loading successful: {len(audio_data)} samples at {sample_rate} Hz")
             return audio_data, sample_rate
         except Exception as e:
             if self.debug:
-                print(f"Soundfile failed: {e}")
+                print(f"  ⚠️ Soundfile failed: {e}")
         
         # Fallback to FFmpeg
-        print("Trying FFmpeg conversion...")
+        print("  🔄 Trying FFmpeg conversion...")
         return self.load_audio_with_ffmpeg(audio_file)
     
     def get_embedding(self, audio_path, segment):
@@ -320,9 +330,10 @@ class AudioTranscriberWithDiarization:
                     'speaker': person_name
                 })
 
+        print(f"  📊 Found {len(speaker_timeline)} speaker segments")
+        print(f"  📝 Found {len(asr_chunks)} transcription chunks")
         if self.debug:
-            print(f"📊 Found {len(speaker_timeline)} speaker segments with consistent names")
-            print(f"📝 Found {len(asr_chunks)} ASR chunks")
+            print(f"  🔍 Processing speaker assignments...")
 
         # Assign speakers to ASR chunks
         for chunk in asr_chunks:
@@ -366,8 +377,10 @@ class AudioTranscriberWithDiarization:
             print(f"Error: Audio file '{audio_file}' not found.")
             return None
         
-        print(f"Processing audio file: {audio_file}")
-        print(f"Language: {language if language else 'Auto-detect'}")
+        print(f"📂 Processing audio file: {audio_file}")
+        print(f"🌍 Language: {language if language else 'Auto-detect'}")
+        print(f"⏱️ Audio duration: {len(audio_data) / sample_rate:.1f} seconds")
+        print("")
         
         try:
             # Check file extension and provide format info
@@ -399,13 +412,14 @@ class AudioTranscriberWithDiarization:
 
             try:
                 # Run diarization
-                if self.debug: 
-                    print("🎯 Running diarization...")
+                print("🎯 Running speaker diarization...")
+                print("  ⏳ This may take several minutes for longer audio files...")
                 diarization = self.diarization_pipeline(temp_audio_file)
+                print("  ✅ Diarization completed!")
 
                 # Run ASR with chunking for long-form audio
-                if self.debug: 
-                    print("🎤 Running ASR transcription...")
+                print("🎤 Running speech recognition...")
+                print("  ⏳ Processing audio chunks...")
                 
                 # Run ASR with chunking for long-form audio
                 # Note: language parameter is handled differently in transformers pipeline
@@ -415,9 +429,12 @@ class AudioTranscriberWithDiarization:
                     chunk_length_s=30,
                     stride_length_s=5
                 )
+                print("  ✅ Speech recognition completed!")
 
                 # Combine ASR and diarization results
+                print("🔗 Aligning transcription with speaker information...")
                 segments = self.align_asr_with_diarization(asr_result, diarization, temp_audio_file)
+                print("  ✅ Alignment completed!")
                 
                 # Display results
                 if segments:
