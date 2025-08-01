@@ -78,7 +78,7 @@ class AudioTranscriberWithDiarization:
                 torch_dtype=torch_dtype,
                 device=device,
                 return_timestamps=True,
-                generate_kwargs={"max_new_tokens": 448}
+                generate_kwargs={"max_new_tokens": 256}  # Reduced from 448 to avoid token limit issues
             )
             
             # Initialize Diarization pipeline
@@ -423,13 +423,25 @@ class AudioTranscriberWithDiarization:
                 
                 # Run ASR with chunking for long-form audio
                 # Note: language parameter is handled differently in transformers pipeline
+                print("  📝 Processing audio in chunks...")
                 asr_result = self.asr_pipeline(
                     audio_data, 
                     return_timestamps=True,
                     chunk_length_s=30,
-                    stride_length_s=5
+                    stride_length_s=5,
+                    ignore_warning=True  # Suppress chunking warning
                 )
                 print("  ✅ Speech recognition completed!")
+                
+                # Check if we got any results
+                if not asr_result or not asr_result.get("chunks"):
+                    print("  ⚠️ No transcription chunks found, trying alternative approach...")
+                    # Try without chunking for very short audio
+                    asr_result = self.asr_pipeline(
+                        audio_data, 
+                        return_timestamps=True,
+                        ignore_warning=True
+                    )
 
                 # Combine ASR and diarization results
                 print("🔗 Aligning transcription with speaker information...")
@@ -470,7 +482,16 @@ class AudioTranscriberWithDiarization:
                 os.unlink(temp_audio_file)
 
         except Exception as e:
-            print(f"Error processing audio: {str(e)}")
+            error_msg = str(e)
+            print(f"Error processing audio: {error_msg}")
+            
+            # Provide specific guidance for common errors
+            if "max_new_tokens" in error_msg and "max_target_positions" in error_msg:
+                print("\n💡 This error is related to token limits. The script has been updated to handle this.")
+                print("   If you continue to see this error, try using a smaller model (e.g., -m tiny or -m base)")
+            elif "chunk_length_s" in error_msg:
+                print("\n💡 This error is related to audio chunking. The script has been updated to handle this.")
+            
             return None
 
     def save_transcription_with_speakers(self, segments, output_file, with_timestamps=True):
