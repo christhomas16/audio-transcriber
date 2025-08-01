@@ -10,13 +10,13 @@ import whisper
 from pathlib import Path
 
 
-def transcribe_audio(audio_file, model_size="base", language="en", output_file=None, with_timestamps=True):
+def transcribe_audio(audio_file, model_size="medium.en", language="en", output_file=None, with_timestamps=True):
     """
     Transcribe audio file using Whisper model
     
     Args:
         audio_file (str): Path to audio file
-        model_size (str): Whisper model size (tiny, base, small, medium, large)
+        model_size (str): Whisper model size (tiny, base, small, medium, large, medium.en)
         language (str): Language code (e.g., 'en', 'es', 'fr')
         output_file (str): Optional output file path
         with_timestamps (bool): Include timestamps in output
@@ -29,6 +29,14 @@ def transcribe_audio(audio_file, model_size="base", language="en", output_file=N
     if not os.path.exists(audio_file):
         print(f"Error: Audio file '{audio_file}' not found.")
         return None
+    
+    # Auto-select appropriate model based on language
+    if language and language != "en" and model_size.endswith(".en"):
+        print(f"Warning: Using English-only model '{model_size}' for language '{language}'")
+        print("Switching to multilingual 'medium' model for better results")
+        model_size = "medium"
+    elif not language and model_size.endswith(".en"):
+        print("Note: Using English-only model for auto-detection. Consider 'medium' for multilingual audio.")
     
     print(f"Loading Whisper model: {model_size}")
     try:
@@ -96,8 +104,8 @@ def save_transcription(result, output_file, with_timestamps=True):
 def main():
     parser = argparse.ArgumentParser(description="Transcribe audio files using OpenAI Whisper")
     parser.add_argument("audio_file", help="Path to the audio file to transcribe")
-    parser.add_argument("-m", "--model", choices=["tiny", "base", "small", "medium", "large"], 
-                       default="base", help="Whisper model size (default: base)")
+    parser.add_argument("-m", "--model", choices=["tiny", "base", "small", "medium", "large", "medium.en"], 
+                       default="medium.en", help="Whisper model size (default: medium.en for English)")
     parser.add_argument("-l", "--language", default="en", 
                        help="Language code (e.g., en, es, fr) - leave empty for auto-detection")
     parser.add_argument("-o", "--output", help="Output file path (default: [audio_filename]_transcription.txt)")
