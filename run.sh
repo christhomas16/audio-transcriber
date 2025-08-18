@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Audio Transcriber Runner Script
-# This script provides an easy way to run the audio transcriber
+# Audio/Video Transcriber Runner Script
+# This script provides an easy way to run the audio/video transcriber
 
 set -e  # Exit on any error
 
@@ -252,21 +252,31 @@ show_usage() {
     echo ""
     echo "Basic usage:"
     echo "  $0 audio.wav"
+    echo "  $0 video.mp4"
+    echo "  $0 audio.mp3"
     echo ""
     echo "With custom model:"
     echo "  $0 audio.wav -m large"
+    echo "  $0 video.mp4 -m large"
     echo ""
     echo "With custom language:"
     echo "  $0 audio.wav -l es"
+    echo "  $0 video.mp4 -l es"
     echo ""
     echo "With custom output file:"
     echo "  $0 audio.wav -o my_transcription.txt"
+    echo "  $0 video.mp4 -o my_transcription.txt"
     echo ""
     echo "Without timestamps:"
     echo "  $0 audio.wav --no-timestamps"
+    echo "  $0 video.mp4 --no-timestamps"
     echo ""
     echo "Setup environment (create virtual environment and install dependencies):"
     echo "  $0 --setup"
+    echo ""
+    echo "Supported file formats:"
+    echo "  Audio: wav, mp3, m4a, flac, aac, ogg"
+    echo "  Video: mp4, avi, mov, mkv, webm"
     echo ""
     echo "Available models: tiny, base, small, medium, large"
     echo "Language codes: en (English), es (Spanish), fr (French), etc."
@@ -276,7 +286,7 @@ show_usage() {
 
 # Main execution
 main() {
-    print_info "Starting Audio Transcriber..."
+    print_info "Starting Audio/Video Transcriber..."
     
     # Check if no arguments provided
     if [ $# -eq 0 ]; then

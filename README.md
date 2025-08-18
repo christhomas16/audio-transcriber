@@ -117,8 +117,9 @@ If you prefer manual installation:
 Basic usage:
 ```bash
 ./run.sh audio.wav
-# Also works with M4A, MP3, and other formats:
+# Also works with M4A, MP3, MP4, and other formats:
 ./run.sh recording.m4a
+./run.sh video.mp4
 ```
 
 ### Speaker Diarization (Advanced)
@@ -128,8 +129,9 @@ Basic usage:
 Basic usage with speaker identification:
 ```bash
 ./run_diarization.sh audio.wav
-# Also works with M4A, MP3, and other formats:
+# Also works with M4A, MP3, MP4, and other formats:
 ./run_diarization.sh recording.m4a
+./run_diarization.sh video.mp4
 ```
 
 With debug mode to see speaker identification details:
@@ -290,7 +292,13 @@ Hello, this is a sample audio file. The transcription includes timestamps. This 
    ./run.sh recording.m4a -m base
    ```
 
-6. **Auto-detect language:**
+6. **MP4 video files:**
+   ```bash
+   ./run.sh video.mp4 -m medium
+   ./run.sh presentation.mp4 -o presentation_transcript.txt
+   ```
+
+7. **Auto-detect language:**
    ```bash
    ./run.sh multilingual_audio.wav -l ""
    ```
@@ -315,6 +323,12 @@ Hello, this is a sample audio file. The transcription includes timestamps. This 
 10. **Podcast with speaker tracking:**
     ```bash
     ./run_diarization.sh podcast.m4a -o podcast_transcript.txt
+    ```
+
+11. **Video with multiple speakers:**
+    ```bash
+    ./run_diarization.sh meeting_video.mp4 -m large --debug
+    ./run_diarization.sh interview_video.mp4 -o interview_transcript.txt
     ```
 
 ## Virtual Environment Management

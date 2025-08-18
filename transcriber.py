@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Audio Transcriber using OpenAI's Whisper model
+Audio/Video Transcriber using OpenAI's Whisper model
 """
 
 import argparse
@@ -220,8 +220,8 @@ def save_transcription(result, output_file, with_timestamps=True):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Transcribe audio files using OpenAI Whisper")
-    parser.add_argument("audio_file", help="Path to the audio file to transcribe")
+    parser = argparse.ArgumentParser(description="Transcribe audio and video files using OpenAI Whisper")
+    parser.add_argument("audio_file", help="Path to the audio or video file to transcribe (supports: wav, mp3, mp4, avi, mov, etc.)")
     parser.add_argument("-m", "--model", choices=["tiny", "base", "small", "medium", "large", "medium.en"], 
                        default="medium.en", help="Whisper model size (default: medium.en for English)")
     parser.add_argument("-l", "--language", default="en", 
