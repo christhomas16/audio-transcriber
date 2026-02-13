@@ -12,6 +12,13 @@ A Python-based audio transcription tool using OpenAI's Whisper model with option
 - Command-line interface with customizable options
 - Easy-to-use shell script wrapper
 
+### Batch Transcription + Summarization
+- **Batch processing**: Transcribe all videos in a folder in one run
+- **LLM summarization**: Automatically summarize each transcription using Ollama
+- **Contact extraction**: Extract emails, phone numbers, URLs, and social handles from both audio transcription and video slides (via OCR)
+- **Resume-safe**: Skips already-processed videos, so you can stop and restart anytime
+- **Configurable**: Choose Whisper model, Ollama model, and toggle features on/off
+
 ### Speaker Diarization (Advanced)
 - **Speaker identification**: Automatically identify and distinguish between different speakers
 - **Voice fingerprinting**: Create consistent speaker profiles across the audio
@@ -25,6 +32,13 @@ A Python-based audio transcription tool using OpenAI's Whisper model with option
 - Python 3.7+
 - OpenAI Whisper
 - FFmpeg (for audio processing)
+
+### Batch Processing (Additional Requirements)
+- requests (HTTP calls to Ollama)
+- python-dotenv (environment variable management)
+- pytesseract + Tesseract OCR (contact extraction from video frames)
+- Pillow (image processing)
+- Ollama running locally or on your network (for LLM summarization)
 
 ### Speaker Diarization (Additional Requirements)
 - PyTorch and TorchAudio
@@ -158,6 +172,80 @@ Without timestamps:
 ```bash
 ./run.sh audio.wav --no-timestamps
 ```
+
+### Batch Transcription + Summarization
+
+Process all MP4 files in the `videos/` folder — transcribe, summarize with Ollama, and extract contact info:
+
+#### Setup
+
+1. Create a `.env` file with your Ollama configuration:
+   ```bash
+   OLLAMA_URL=http://localhost:11434
+   OLLAMA_MODEL=qwen3:8b
+   ```
+
+2. Install Tesseract OCR (for contact extraction from video slides):
+
+   **macOS:**
+   ```bash
+   brew install tesseract
+   ```
+
+   **Ubuntu/Debian:**
+   ```bash
+   sudo apt install tesseract-ocr
+   ```
+
+#### Usage
+
+```bash
+# Preview what will be processed
+./run_batch.sh --dry-run
+
+# Process all videos (transcribe + summarize + extract contacts)
+./run_batch.sh
+
+# Process just the first video
+./run_batch.sh --limit 1
+
+# Transcribe only (skip Ollama summarization)
+./run_batch.sh --transcribe-only
+
+# Summarize only (if transcriptions already exist)
+./run_batch.sh --summarize-only
+
+# Skip contact extraction
+./run_batch.sh --no-contacts
+
+# Use a different Whisper model
+./run_batch.sh -m large
+```
+
+#### Output
+
+For each video, the script produces up to 3 files in the `output/` directory:
+
+| File | Contents |
+|------|----------|
+| `[video]_transcription.txt` | Timestamped transcription + full text |
+| `[video]_summary.txt` | Structured summary (Overview, Key Points, Implementation, Results) |
+| `[video]_contacts.txt` | Extracted emails, phones, URLs, and social handles |
+
+#### Batch Command-line Options
+
+| Flag | Description |
+|------|-------------|
+| `--dry-run` | Preview what would be processed |
+| `--limit N` | Only process the first N videos |
+| `--transcribe-only` | Skip LLM summarization |
+| `--summarize-only` | Only summarize existing transcriptions |
+| `--no-contacts` | Skip contact info extraction |
+| `-m, --model` | Whisper model size (default: medium.en) |
+| `--ollama-url` | Override Ollama URL from .env |
+| `--ollama-model` | Override Ollama model from .env |
+| `-v, --videos-dir` | Video directory (default: videos) |
+| `-o, --output-dir` | Output directory (default: output) |
 
 ### Using Python directly
 
@@ -437,18 +525,20 @@ Speaker diarization requires a free Hugging Face account and token:
 
 ```
 audio-transcriber/
-├── transcriber.py                    # Basic transcription script
+├── transcriber.py                    # Basic single-file transcription script
 ├── transcriber_with_diarization.py   # Advanced transcription with speaker identification
+├── batch_transcribe_summarize.py     # Batch transcription + summarization + contact extraction
 ├── run.sh                           # Basic transcription shell script wrapper
 ├── run_diarization.sh               # Diarization shell script wrapper
-├── requirements.txt                 # Basic transcription dependencies
-├── requirements_diarization.txt     # Diarization dependencies
-├── .gitignore                      # Git ignore patterns
-├── README.md                       # This file
-└── venv/                           # Virtual environment (created by setup)
-    ├── bin/
-    ├── lib/
-    └── ...
+├── run_batch.sh                     # Batch processing shell script wrapper
+├── requirements.txt                 # Python dependencies
+├── requirements_diarization.txt     # Additional diarization dependencies
+├── .env                             # Local config: Ollama URL, HF token (not committed)
+├── .gitignore                       # Git ignore patterns
+├── README.md                        # This file
+├── videos/                          # Place video files here (not committed)
+├── output/                          # Batch processing output (not committed)
+└── venv/                            # Virtual environment (created by setup)
 ```
 
 ## Contributing
@@ -463,3 +553,5 @@ This project is open source. Please check the Whisper license for model usage te
 
 - OpenAI for the Whisper model
 - The open-source community for FFmpeg and related tools
+- Ollama for local LLM inference
+- Tesseract OCR for text extraction from video frames

@@ -186,6 +186,14 @@ transcription.txt
 transcript.txt
 *_output.txt
 output.txt
+*_summary.txt
+*_contacts.txt
+
+# Input videos
+videos/
+
+# Batch processing output
+output/
 
 # Whisper model cache and files
 *.pt
