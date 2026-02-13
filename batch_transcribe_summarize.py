@@ -34,7 +34,7 @@ DEFAULT_OUTPUT_DIR = "output"
 DEFAULT_WHISPER_MODEL = "medium.en"
 DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_URL", "")
 DEFAULT_OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "")
-OLLAMA_TIMEOUT = 300  # 5 minutes per summary request
+OLLAMA_TIMEOUT = 600  # 10 minutes per summary request
 
 
 def load_whisper_model(model_size="medium.en"):
