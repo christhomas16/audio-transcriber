@@ -296,7 +296,7 @@ def extract_contacts(text):
     return contacts
 
 
-def save_contacts(contacts, source_labels, output_path):
+def save_contacts(source_labels, output_path):
     """
     Save extracted contacts to a file.
     source_labels is a dict mapping source name to its contacts dict.
