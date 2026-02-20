@@ -212,6 +212,9 @@ processed_audio/
 # DEVELOPMENT TOOLS
 # =============================================================================
 
+# Claude Code
+.claude/
+
 # PyCharm
 .idea/
 
