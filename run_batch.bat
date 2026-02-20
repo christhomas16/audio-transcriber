@@ -72,13 +72,27 @@ if %ERRORLEVEL% neq 0 (
 :: ---------------------------------------------------------------
 where tesseract >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo [WARNING] Tesseract OCR not found. Contact extraction from video slides will be skipped.
-    echo.
-    echo   Install Tesseract ^(optional, not needed with --no-contacts^):
-    echo     Option A - winget:  winget install UB-Mannheim.TesseractOCR
-    echo     Option B - choco:   choco install tesseract
-    echo     Option C - manual:  https://github.com/UB-Mannheim/tesseract/wiki
-    echo.
+    :: Also check default install location in case it's not in PATH yet
+    if exist "C:\Program Files\Tesseract-OCR\tesseract.exe" (
+        echo [OK] Tesseract OCR found ^(adding to PATH^)
+        set PATH=%PATH%;C:\Program Files\Tesseract-OCR
+    ) else (
+        echo [WARNING] Tesseract OCR not found. Required for contact extraction from video slides.
+        echo.
+        set /p "INSTALL_TESS=Install Tesseract OCR now via winget? (Y/n): "
+        if /i not "!INSTALL_TESS!"=="n" (
+            echo [INFO] Installing Tesseract OCR...
+            winget install UB-Mannheim.TesseractOCR --accept-source-agreements --accept-package-agreements
+            if %ERRORLEVEL% equ 0 (
+                echo [OK] Tesseract installed successfully
+                set PATH=%PATH%;C:\Program Files\Tesseract-OCR
+            ) else (
+                echo [WARNING] Tesseract install failed. Contact extraction from slides will be skipped.
+            )
+        ) else (
+            echo [INFO] Skipping Tesseract. Contact extraction from video slides will be disabled.
+        )
+    )
 ) else (
     echo [OK] Tesseract OCR found
 )
@@ -110,7 +124,36 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: ---------------------------------------------------------------
-:: 6. Install/upgrade pip and install Python dependencies
+:: 6. Check for NVIDIA GPU and install CUDA PyTorch if needed
+:: ---------------------------------------------------------------
+nvidia-smi >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    python -c "import torch; exit(0 if torch.cuda.is_available() else 1)" >nul 2>nul
+    if %ERRORLEVEL% neq 0 (
+        echo [INFO] NVIDIA GPU detected but PyTorch CUDA support not found.
+        echo   GPU acceleration makes Whisper transcription significantly faster.
+        echo.
+        set /p "INSTALL_CUDA=Install CUDA PyTorch for GPU acceleration? (Y/n): "
+        if /i not "!INSTALL_CUDA!"=="n" (
+            echo [INFO] Installing CUDA PyTorch ^(this may take a few minutes^)...
+            python -m pip install torch --index-url https://download.pytorch.org/whl/cu128 -q
+            if %ERRORLEVEL% equ 0 (
+                echo [OK] CUDA PyTorch installed successfully
+            ) else (
+                echo [WARNING] CUDA PyTorch install failed. Falling back to CPU.
+            )
+        ) else (
+            echo [INFO] Skipping CUDA PyTorch. Whisper will run on CPU ^(slower^).
+        )
+    ) else (
+        echo [OK] PyTorch with CUDA support found
+    )
+) else (
+    echo [INFO] No NVIDIA GPU detected, using CPU for transcription
+)
+
+:: ---------------------------------------------------------------
+:: 7. Install/upgrade pip and install Python dependencies
 :: ---------------------------------------------------------------
 echo [INFO] Checking Python dependencies...
 python -m pip install --upgrade pip -q 2>nul
@@ -128,7 +171,7 @@ if %ERRORLEVEL% neq 0 (
 echo [OK] All Python dependencies installed
 
 :: ---------------------------------------------------------------
-:: 7. Check for .env file
+:: 8. Check for .env file
 :: ---------------------------------------------------------------
 if not exist ".env" (
     echo.
@@ -143,7 +186,7 @@ if not exist ".env" (
 )
 
 :: ---------------------------------------------------------------
-:: 8. Check for videos directory
+:: 9. Check for videos directory
 :: ---------------------------------------------------------------
 if not exist "videos" (
     echo [WARNING] No 'videos\' directory found. Creating it...
@@ -152,7 +195,7 @@ if not exist "videos" (
 )
 
 :: ---------------------------------------------------------------
-:: 9. Run the batch processor, passing through all arguments
+:: 10. Run the batch processor, passing through all arguments
 :: ---------------------------------------------------------------
 echo.
 echo [INFO] Starting batch transcription and summarization...
