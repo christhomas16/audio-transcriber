@@ -75,7 +75,7 @@ if %ERRORLEVEL% neq 0 (
     :: Also check default install location in case it's not in PATH yet
     if exist "C:\Program Files\Tesseract-OCR\tesseract.exe" (
         echo [OK] Tesseract OCR found ^(adding to PATH^)
-        set PATH=%PATH%;C:\Program Files\Tesseract-OCR
+        set "PATH=%PATH%;C:\Program Files\Tesseract-OCR"
     ) else (
         echo [WARNING] Tesseract OCR not found. Required for contact extraction from video slides.
         echo.
@@ -85,7 +85,7 @@ if %ERRORLEVEL% neq 0 (
             winget install UB-Mannheim.TesseractOCR --accept-source-agreements --accept-package-agreements
             if %ERRORLEVEL% equ 0 (
                 echo [OK] Tesseract installed successfully
-                set PATH=%PATH%;C:\Program Files\Tesseract-OCR
+                set "PATH=%PATH%;C:\Program Files\Tesseract-OCR"
             ) else (
                 echo [WARNING] Tesseract install failed. Contact extraction from slides will be skipped.
             )
