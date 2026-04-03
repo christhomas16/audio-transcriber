@@ -271,6 +271,12 @@ show_usage() {
     echo "  $0 audio.wav --no-timestamps"
     echo "  $0 video.mp4 --no-timestamps"
     echo ""
+    echo "Batch mode (process all MP4s in a folder):"
+    echo "  $0 --batch --videos-dir AAMC --output-dir AAMC --transcribe-only"
+    echo "  $0 --batch --videos-dir videos --output-dir output"
+    echo "  $0 --batch --videos-dir AAMC --output-dir AAMC --model large --transcribe-only"
+    echo "  $0 --batch --videos-dir AAMC --output-dir AAMC --dry-run"
+    echo ""
     echo "Setup environment (create virtual environment and install dependencies):"
     echo "  $0 --setup"
     echo ""
@@ -305,7 +311,45 @@ main() {
         setup_environment
         exit 0
     fi
-    
+
+    # Check if batch mode is requested
+    if [ "$1" = "--batch" ]; then
+        shift  # Remove --batch from arguments
+
+        # Quick environment check
+        print_info "Performing quick environment check..."
+
+        if ! command -v python3 &> /dev/null; then
+            print_error "Python3 is not installed. Run '$0 --setup' to install dependencies."
+            exit 1
+        fi
+
+        if ! activate_virtual_environment; then
+            print_warning "Virtual environment not found. Run '$0 --setup' to create one."
+            print_info "Continuing with system Python..."
+        fi
+
+        if ! python -c "import whisper" &> /dev/null; then
+            print_error "OpenAI Whisper is not installed. Run '$0 --setup' to install dependencies."
+            exit 1
+        fi
+
+        if ! command -v ffmpeg &> /dev/null; then
+            print_warning "FFmpeg not found. Audio processing may not work properly."
+        fi
+
+        print_info "Running batch transcriber with arguments: $@"
+        python batch_transcribe_summarize.py "$@"
+
+        if [ $? -eq 0 ]; then
+            print_success "Batch transcription completed successfully!"
+        else
+            print_error "Batch transcription failed!"
+            exit 1
+        fi
+        exit 0
+    fi
+
     # Quick environment check (without interactive prompts)
     print_info "Performing quick environment check..."
     
