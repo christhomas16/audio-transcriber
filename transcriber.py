@@ -6,6 +6,7 @@ Audio/Video Transcriber using OpenAI's Whisper model
 import argparse
 import sys
 import os
+import subprocess
 import whisper
 from pathlib import Path
 from datetime import datetime
@@ -15,29 +16,41 @@ import contextlib
 
 def get_audio_duration(audio_file):
     """
-    Get audio file duration in seconds.
-    
+    Get audio/video file duration in seconds.
+
+    Uses ffprobe (works for any format ffmpeg supports), and falls back
+    to the WAV header if ffprobe is unavailable.
+
     Args:
-        audio_file (str): Path to audio file
-        
+        audio_file (str): Path to audio or video file
+
     Returns:
         float: Duration in seconds, or None if unable to determine
     """
+    # Preferred: ask ffprobe for the real container duration
     try:
-        # Try to get duration for WAV files
+        out = subprocess.run(
+            ["ffprobe", "-v", "error",
+             "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", audio_file],
+            capture_output=True, text=True, timeout=30,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            return float(out.stdout.strip())
+    except Exception:
+        pass
+
+    # Fallback: read the WAV header directly if ffprobe isn't available
+    try:
         if audio_file.lower().endswith('.wav'):
             with contextlib.closing(wave.open(audio_file, 'r')) as f:
                 frames = f.getnframes()
                 rate = f.getframerate()
                 return frames / float(rate)
-        else:
-            # For other formats, we'll estimate based on file size
-            # This is a rough approximation
-            file_size_mb = os.path.getsize(audio_file) / (1024 * 1024)
-            # Rough estimate: 1MB ≈ 1 minute for compressed audio
-            return file_size_mb * 60
-    except:
-        return None
+    except Exception:
+        pass
+
+    return None
 
 
 def backup_existing_file(output_file):

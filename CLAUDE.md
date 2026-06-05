@@ -16,6 +16,11 @@ Audio transcription tool using OpenAI's Whisper with three modes of operation:
 ./run.sh --setup                    # Create venv, install deps, check FFmpeg
 ./run_diarization.sh --setup        # Setup including PyTorch + pyannote.audio
 
+# Simplest workflow: drop videos in videos/, get transcripts in output/
+./transcribe.sh                     # Transcribe-only (no summary, no contacts), resume-safe
+./transcribe.sh -m base             # Use a faster model
+./transcribe.sh --dry-run           # Preview what will be processed
+
 # Single file transcription
 ./run.sh audio.wav                  # Basic transcription (default model: medium.en)
 ./run.sh audio.wav -m large -l es   # Custom model and language
@@ -24,6 +29,8 @@ Audio transcription tool using OpenAI's Whisper with three modes of operation:
 ./run_batch.sh                      # Transcribe + summarize + extract contacts
 ./run_batch.sh --dry-run            # Preview what will be processed
 ./run_batch.sh --transcribe-only    # Skip Ollama summarization
+./run_batch.sh --summarize-only     # Summarize existing transcriptions only
+./run_batch.sh --no-contacts        # Skip OCR/contact extraction
 ./run_batch.sh --limit 1            # Process only first N videos
 
 # Diarization
@@ -55,7 +62,12 @@ System dependencies: FFmpeg (required), Tesseract OCR (optional, for contact ext
 
 ## Key Conventions
 
-- Default Whisper model is `medium.en` (English-only, good speed/accuracy tradeoff)
-- Output files follow the pattern `{stem}_transcription.txt`, `{stem}_summary.txt`, `{stem}_contacts.txt`
-- Transcription files have a "TRANSCRIPTION WITH TIMESTAMPS" header, followed by `[start - end] text` lines, optionally followed by a "FULL TEXT" section (batch mode adds this)
+- Default Whisper model is `medium.en` (English-only, good speed/accuracy tradeoff) for `transcriber.py` and batch mode. **Diarization defaults to `base`** and maps model names to HuggingFace IDs (e.g. `large` → `openai/whisper-large-v3`); it accepts only `tiny/base/small/medium/large`, not `.en` variants.
+- Output files follow the pattern `{stem}_transcription.txt`, `{stem}_summary.txt`, `{stem}_contacts.txt`. Diarization writes `{stem}_transcription_with_speakers.txt`.
+- Transcription files have a "TRANSCRIPTION WITH TIMESTAMPS" header, followed by `[start - end] text` lines, optionally followed by a "FULL TEXT" section (batch mode adds this). `read_transcription()` in batch mode parses both the new (FULL TEXT) and legacy (timestamp-only) formats.
 - Existing output files are backed up with `_backup_{timestamp}` suffix (single-file mode) or simply skipped (batch mode)
+- Batch summarization truncates transcripts to 120k chars, uses a 600s Ollama timeout, and includes a `/no_think` directive in the prompt (tuned for qwen3).
+
+## Diarization: voice fingerprinting
+
+`transcriber_with_diarization.py` aligns Whisper ASR chunks (30s chunks, 5s stride) to pyannote diarization segments using speaker embeddings (cosine similarity), maintaining a running-average voiceprint per speaker. Thresholds (see `get_consistent_person_name_by_voice()`): strong match ≥0.85 updates the voiceprint, weak match ≥0.7 assigns without updating, segments <2s force-match to the nearest existing speaker, and a new speaker is created only when similarity <0.7 **and** duration ≥2s. Device is auto-detected: MPS (macOS) → CUDA → CPU. Use `--debug` to log matching decisions.

@@ -50,17 +50,29 @@ def load_whisper_model(model_size="medium.en"):
         sys.exit(1)
 
 
+# Video container formats we know ffmpeg/Whisper can read
+VIDEO_EXTENSIONS = (".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".wmv", ".flv", ".mpg", ".mpeg")
+
+
 def find_mp4_files(videos_dir):
-    """Find all MP4 files in the given directory, sorted alphabetically."""
+    """Find all video files in the given directory, sorted alphabetically.
+
+    Despite the name, this matches any common video container (mp4, mov,
+    mkv, webm, ...), case-insensitively.
+    """
     videos_path = Path(videos_dir)
     if not videos_path.is_dir():
         print(f"ERROR: Videos directory '{videos_dir}' not found.")
         sys.exit(1)
-    mp4_files = sorted(videos_path.glob("*.mp4"))
-    if not mp4_files:
-        print(f"No MP4 files found in '{videos_dir}'.")
+    video_files = sorted(
+        p for p in videos_path.iterdir()
+        if p.is_file() and p.suffix.lower() in VIDEO_EXTENSIONS
+    )
+    if not video_files:
+        print(f"No video files found in '{videos_dir}' "
+              f"(looked for: {', '.join(VIDEO_EXTENSIONS)}).")
         sys.exit(1)
-    return mp4_files
+    return video_files
 
 
 def get_output_paths(video_path, output_dir):
